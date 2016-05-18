@@ -1,4 +1,4 @@
-local MAJOR, MINOR = 'Kui-1.0', 15
+local MAJOR, MINOR = 'Kui-1.0', 16
 local kui = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not kui then
@@ -37,13 +37,39 @@ local ct = { -- classification table
     worldboss = { 'b',  'boss'       }
 }
 ------------------------------------------------------------------- functions --
-kui.print = function(...)
-    local vals = {...}
-    local msg = ''
-    for k,v in ipairs(vals) do
-        msg = tostring(v)..', '
+kui.table_to_string = function(tbl,depth)
+    if depth and depth >= 3 then
+        return '{ ... }'
     end
-    print(GetTime()..': '..msg:gsub(", $",""))
+    local str
+    for k,v in pairs(tbl) do
+        if type(v) ~= 'userdata' then
+            if type(v) == 'table' then
+                v = kui.table_to_string(v,(depth and depth+1 or 1))
+            elseif type(v) == 'function' then
+                v = 'function'
+            elseif type(v) == 'string' then
+                v = '"'..v..'"'
+            end
+
+            if type(k) == 'string' then
+                k = '"'..k..'"'
+            end
+
+            str = (str and str..'|cff999999,|r ' or '|cff999999{|r ')..'|cffffff99['..tostring(k)..']|r |cff999999=|r |cffffffff'..tostring(v)..'|r'
+        end
+    end
+    return (str or '{ ')..' }'
+end
+kui.print = function(...)
+    local msg
+    for k,v in ipairs({...}) do
+        if type(v) == 'table' then
+            v = kui.table_to_string(v)
+        end
+        msg = (msg and msg..', ' or '')..tostring(v)
+    end
+    print(GetTime()..': '..(msg or 'nil'))
 end
 kui.GetClassColour = function(class, str)
     if not class then
