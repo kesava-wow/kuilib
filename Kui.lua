@@ -322,14 +322,26 @@ local function CreateDebugPopup()
     end)
 
     local s = CreateFrame('ScrollFrame','KuiDebugEditBoxScrollFrame',UIParent,'UIPanelScrollFrameTemplate')
+    s:SetMovable(true)
     s:SetFrameStrata('DIALOG')
     s:SetSize(450,300)
     s:SetPoint('CENTER')
     s:SetScrollChild(p)
     s:Hide()
 
-    s:SetScript('OnMouseDown',function(self)
-        self:GetScrollChild():SetFocus()
+    s:SetScript('OnMouseDown',function(self,button)
+        if button == 'RightButton' and not self.is_moving then
+            self:StartMoving()
+            self.is_moving = true
+        elseif button == 'LeftButton' then
+            self:GetScrollChild():SetFocus()
+        end
+    end)
+    s:SetScript('OnMouseUp',function(self,button)
+        if button == 'RightButton' and self.is_moving then
+            self:StopMovingOrSizing()
+            self.is_moving = nil
+        end
     end)
 
     local bg = CreateFrame('Frame',nil,UIParent)
