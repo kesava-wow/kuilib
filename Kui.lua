@@ -6,7 +6,7 @@ if not kui then
     return
 end
 
--- media #######################################################################
+-- media # XXX LEGACY #########################################################
 local media = "Interface\\AddOns\\Kui_Media\\"
 kui.m = {
     t = {
@@ -194,7 +194,7 @@ kui.CreateFontString = function(parent, args)
     return ob
 end
 -- generic helpers #############################################################
-kui.num = function(num)
+kui.num = function(num) -- TODO needs locale
     if not num then return end
     if num < THOUSAND then
         return floor(num)
