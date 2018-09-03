@@ -118,7 +118,6 @@ kui.GetUnitColour = function(unit, str)
             return kui.GetClassColour(unit, str)
         else
             r, g, b = UnitSelectionColor(unit)
-            ret = { r = r, g = g, b = b }
         end
     end
 
