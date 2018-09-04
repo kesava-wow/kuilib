@@ -25,7 +25,6 @@ kui.m = {
         stripebar = media .. 't\\stippled-bar',
     },
     f = {
-        yanone   = media..'f\\yanone.ttf',
         francois = media..'f\\francois.ttf',
         roboto   = media..'f\\roboto.ttf',
     },
