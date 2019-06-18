@@ -99,6 +99,8 @@ kui.table_to_string = function(tbl,max_depth)
     return loop(tbl)
 end
 function kui.string_to_table(str)
+    -- convert string from above function back to table
+    -- (with restrictions)
     local out_table = {}
     local function loop(str,nested_table)
         if str == '{}' or str == '{..}' then
