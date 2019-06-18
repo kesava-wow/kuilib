@@ -42,6 +42,23 @@ local ct = { -- classification table
     worldboss = { 'b',  'boss'       }
 }
 -- functions ###################################################################
+local function SortedTableIndex(tbl)
+    local index = {}
+    for k,v in pairs(tbl) do
+        tinsert(index,k)
+    end
+    table.sort(index,function(a,b)
+        local str_a,str_b=tostring(a),tostring(b)
+        if a and not b then
+            return true
+        elseif b and not a then
+            return false
+        else
+            return strlower(a) < strlower(b)
+        end
+    end)
+    return index
+end
 kui.table_to_string = function(tbl,max_depth)
     -- convert table to string (with restrictions)
     if not max_depth then
@@ -51,13 +68,18 @@ kui.table_to_string = function(tbl,max_depth)
         if depth and depth >= max_depth then
             return '{}'
         else
-            local str,out_k,out_v
-            for k,v in pairs(tbl) do
+            local str
+            local tbl_index = SortedTableIndex(tbl)
+
+            for _,k in ipairs(tbl_index) do
+                local v = tbl[k]
+
                 if type(k) == 'string' or tostring(k) then
                     k = tostring(k)
                 else
                     k = '('..type(k)..')'
                 end
+
                 if type(v) == 'table' then
                     v = loop(v,depth and depth+1 or 1)
                 elseif type(v) == 'number' then
@@ -67,8 +89,10 @@ kui.table_to_string = function(tbl,max_depth)
                 else
                     v = '('..type(v)..')'
                 end
+
                 str = (str and str..',' or '')..k..'='..v
             end
+
             return str and '{'..str..'}' or '{}'
         end
     end
