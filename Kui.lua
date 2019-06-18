@@ -66,7 +66,7 @@ kui.table_to_string = function(tbl,max_depth)
     end
     local function loop(tbl,depth)
         if depth and depth >= max_depth then
-            return '{}'
+            return '{..}'
         else
             local str
             local tbl_index = SortedTableIndex(tbl)
