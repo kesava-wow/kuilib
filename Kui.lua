@@ -42,29 +42,37 @@ local ct = { -- classification table
     worldboss = { 'b',  'boss'       }
 }
 -- functions ###################################################################
-kui.table_to_string = function(tbl,depth)
-    if depth and depth >= 3 then
-        return '{ ... }'
+kui.table_to_string = function(tbl,max_depth)
+    -- convert table to string (with restrictions)
+    if not max_depth then
+        max_depth = 3
     end
-    local str
-    for k,v in pairs(tbl) do
-        if type(v) ~= 'userdata' then
-            if type(v) == 'table' then
-                v = kui.table_to_string(v,(depth and depth+1 or 1))
-            elseif type(v) == 'function' then
-                v = 'function'
-            elseif type(v) == 'string' then
-                v = '"'..v..'"'
+    local function loop(tbl,depth)
+        if depth and depth >= max_depth then
+            return '{}'
+        else
+            local str,out_k,out_v
+            for k,v in pairs(tbl) do
+                if type(k) == 'string' or tostring(k) then
+                    k = tostring(k)
+                else
+                    k = '('..type(k)..')'
+                end
+                if type(v) == 'table' then
+                    v = loop(v,depth and depth+1 or 1)
+                elseif type(v) == 'number' then
+                    v = tonumber(string.format('%.3f',v))
+                elseif type(v) == 'string' or tostring(v) then
+                    v = tostring(v)
+                else
+                    v = '('..type(v)..')'
+                end
+                str = (str and str..',' or '')..k..'='..v
             end
-
-            if type(k) == 'string' then
-                k = '"'..k..'"'
-            end
-
-            str = (str and str..'|cff999999,|r ' or '|cff999999{|r ')..'|cffffff99['..tostring(k)..']|r |cff999999=|r |cffffffff'..tostring(v)..'|r'
+            return str and '{'..str..'}' or '{}'
         end
     end
-    return (str or '{ ')..' }'
+    return loop(tbl)
 end
 kui.print = function(...)
     local msg
