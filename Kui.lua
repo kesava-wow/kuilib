@@ -111,9 +111,7 @@ function kui.string_to_table(in_str)
             str = strsub(str,2,strlen(str)-1)
         end
 
-        local next_comma,next_equals,next_open,next_close =
-            strfind(str,','),strfind(str,'='),strfind(str,'{'),strfind(str,'}')
-
+        local next_comma,next_equals = strfind(str,','),strfind(str,'=')
         if nested_table or next_equals and not next_comma then
             -- parse "key=value" into final array
             local k = strsub(str,1,next_equals-1)
@@ -135,10 +133,14 @@ function kui.string_to_table(in_str)
 
             out_table[k] = v
             return
-        elseif next_open and next_equals and next_open == next_equals + 1 then
+        end
+
+        local next_open = strfind(str,'{')
+        if next_open and next_equals and next_open == next_equals + 1 then
             -- this value is a nested table,
             -- find the comma after the end (or the end of the string)
-            local next_comma = strfind(str,',',next_close)
+            -- XXX doesn't handle double-nested tables
+            next_comma = strfind(str,',',strfind(str,'}'))
             if next_comma then
                 loop(strsub(str,1,next_comma-1),true)
                 -- and continue...
@@ -148,7 +150,9 @@ function kui.string_to_table(in_str)
                 loop(str,true)
             end
             return
-        elseif next_comma and next_equals and next_equals < next_comma then
+        end
+
+        if next_comma and next_equals and next_equals < next_comma then
             -- parse each delimited section
             loop(strsub(str,1,next_comma-1))
             -- and continue with the remaining text
