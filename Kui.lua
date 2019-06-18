@@ -44,14 +44,14 @@ local ct = { -- classification table
 -- functions ###################################################################
 local function SortedTableIndex(tbl)
     local index = {}
-    for k,v in pairs(tbl) do
+    for k,_ in pairs(tbl) do
         tinsert(index,k)
     end
     table.sort(index,function(a,b)
         local str_a,str_b=tostring(a),tostring(b)
-        if a and not b then
+        if str_a and not str_b then
             return true
-        elseif b and not a then
+        elseif str_b and not str_a then
             return false
         else
             return strlower(a) < strlower(b)
