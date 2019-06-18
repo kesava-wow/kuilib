@@ -44,7 +44,7 @@ local ct = { -- classification table
 -- functions ###################################################################
 local function SortedTableIndex(tbl)
     local index = {}
-    for k,_ in pairs(tbl) do
+    for k in pairs(tbl) do
         tinsert(index,k)
     end
     table.sort(index,function(a,b)
@@ -54,13 +54,13 @@ local function SortedTableIndex(tbl)
         elseif str_b and not str_a then
             return false
         else
-            return strlower(a) < strlower(b)
+            return strlower(str_a) < strlower(str_b)
         end
     end)
     return index
 end
-kui.table_to_string = function(tbl,max_depth)
-    -- convert table to string (with restrictions)
+kui.table_to_string = function(in_tbl,max_depth)
+    -- convert simple table to string (with restrictions)
     if not max_depth then
         max_depth = 3
     end
@@ -96,9 +96,9 @@ kui.table_to_string = function(tbl,max_depth)
             return str and '{'..str..'}' or '{}'
         end
     end
-    return loop(tbl)
+    return loop(in_tbl)
 end
-function kui.string_to_table(str)
+function kui.string_to_table(in_str)
     -- convert string from above function back to table
     -- (with restrictions)
     local out_table = {}
@@ -156,7 +156,7 @@ function kui.string_to_table(str)
             return
         end
     end
-    loop(str)
+    loop(in_str)
     return out_table
 end
 kui.print = function(...)
