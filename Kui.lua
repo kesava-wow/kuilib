@@ -208,6 +208,7 @@ kui.GetClassColour = function(class, str)
     elseif str then
         return string.format("%02x%02x%02x", class.r*255, class.g*255, class.b*255)
     else
+        -- XXX this is a direct reference
         return class
     end
 end
@@ -226,6 +227,7 @@ kui.GetUnitColour = function(unit, str)
         r,g,b = .5,.5,.5
     else
         if UnitIsPlayer(unit) or kui.UnitIsPet(unit) then
+            -- XXX this inherits the direct reference (if str==nil)
             return kui.GetClassColour(unit, str)
         else
             r, g, b = UnitSelectionColor(unit)
