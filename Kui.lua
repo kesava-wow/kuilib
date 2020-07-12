@@ -1,4 +1,4 @@
-local MAJOR, MINOR = 'Kui-1.0', 42
+local MAJOR, MINOR = 'Kui-1.0', 43
 local kui = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not kui then
@@ -188,7 +188,6 @@ kui.print = function(...)
     end
     print(GetTime()..': '..(msg or 'nil'))
 end
--- unit helpers ################################################################
 kui.GetClassColour = function(class, str)
     if not class then
         class = select(2, UnitClass('player'))
@@ -212,6 +211,20 @@ kui.GetClassColour = function(class, str)
         return class
     end
 end
+kui.SetTextureToClass = function(texture,class,with_border)
+    local coords = CLASS_ICON_TCOORDS[class]
+    if not with_border then
+        coords={
+            coords[1]+.1,
+            coords[2]-.1,
+            coords[3]+.1,
+            coords[4]-.1
+        }
+    end
+    texture:SetTexture('interface/glues/charactercreate/ui-charactercreate-classes')
+    texture:SetTexCoord(unpack(coords))
+end
+-- unit helpers ################################################################
 kui.UnitIsPet = function(unit)
     return (not UnitIsPlayer(unit) and UnitPlayerControlled(unit))
 end
