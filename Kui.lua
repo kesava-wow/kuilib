@@ -215,10 +215,10 @@ kui.SetTextureToClass = function(texture,class,with_border)
     local coords = CLASS_ICON_TCOORDS[class]
     if not with_border then
         coords={
-            coords[1]+.1,
-            coords[2]-.1,
-            coords[3]+.1,
-            coords[4]-.1
+            coords[1]+.02,
+            coords[2]-.02,
+            coords[3]+.02,
+            coords[4]-.02
         }
     end
     texture:SetTexture('interface/glues/charactercreate/ui-charactercreate-classes')
