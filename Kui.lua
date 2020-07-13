@@ -1,4 +1,4 @@
-local MAJOR, MINOR = 'Kui-1.0', 43
+local MAJOR, MINOR = 'Kui-1.0', 44
 local kui = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not kui then
@@ -211,14 +211,14 @@ kui.GetClassColour = function(class, str)
         return class
     end
 end
-kui.SetTextureToClass = function(texture,class,with_border)
+kui.SetTextureToClass = function(texture,class,with_border,ymod)
     local coords = CLASS_ICON_TCOORDS[class]
     if not with_border then
         coords={
             coords[1]+.02,
             coords[2]-.02,
-            coords[3]+.02,
-            coords[4]-.02
+            coords[3]+.02+(ymod or 0),
+            coords[4]-.02-(ymod or 0)
         }
     end
     texture:SetTexture('interface/glues/charactercreate/ui-charactercreate-classes')
