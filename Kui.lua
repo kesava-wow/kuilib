@@ -526,102 +526,104 @@ do
     end
 end
 -- Frame fading functions ######################################################
-kui.frameFadeFrame = CreateFrame('Frame')
-kui.FADEFRAMES = {}
+do
+    local frameFadeFrame = CreateFrame('Frame')
+    local FADEFRAMES = {}
 
-kui.frameIsFading = function(frame)
-    for _,value in pairs(kui.FADEFRAMES) do
-        if value == frame then
-            return true
-        end
-    end
-end
-kui.frameFadeRemoveFrame = function(frame)
-    tDeleteItem(kui.FADEFRAMES, frame)
-end
-kui.frameFadeOnUpdate = function(self, elapsed)
-    local frame, info
-    for _,value in pairs(kui.FADEFRAMES) do
-        frame, info = value, value.fadeInfo
+    local function OnUpdate(self, elapsed)
+        local frame, info
+        for _,value in pairs(FADEFRAMES) do
+            frame, info = value, value.fadeInfo
 
-        if info.startDelay and info.startDelay > 0 then
-            info.startDelay = info.startDelay - elapsed
-        else
-            info.fadeTimer = (info.fadeTimer and info.fadeTimer + elapsed) or 0
-
-            if info.fadeTimer < info.timeToFade then
-                -- perform animation in either direction
-                if info.mode == 'IN' then
-                    frame:SetAlpha(
-                        (info.fadeTimer / info.timeToFade) *
-                        (info.endAlpha - info.startAlpha) +
-                        info.startAlpha
-                    )
-                elseif info.mode == 'OUT' then
-                    frame:SetAlpha(
-                        ((info.timeToFade - info.fadeTimer) / info.timeToFade) *
-                        (info.startAlpha - info.endAlpha) + info.endAlpha
-                    )
-                end
+            if info.startDelay and info.startDelay > 0 then
+                info.startDelay = info.startDelay - elapsed
             else
-                -- animation has ended
-                frame:SetAlpha(info.endAlpha)
+                info.fadeTimer = (info.fadeTimer and info.fadeTimer + elapsed) or 0
 
-                if info.fadeHoldTime and info.fadeHoldTime > 0 then
-                    info.fadeHoldTime = info.fadeHoldTime - elapsed
+                if info.fadeTimer < info.timeToFade then
+                    -- perform animation in either direction
+                    if info.mode == 'IN' then
+                        frame:SetAlpha(
+                            (info.fadeTimer / info.timeToFade) *
+                            (info.endAlpha - info.startAlpha) +
+                            info.startAlpha
+                        )
+                    elseif info.mode == 'OUT' then
+                        frame:SetAlpha(
+                            ((info.timeToFade - info.fadeTimer) / info.timeToFade) *
+                            (info.startAlpha - info.endAlpha) + info.endAlpha
+                        )
+                    end
                 else
-                    kui.frameFadeRemoveFrame(frame)
+                    -- animation has ended
+                    frame:SetAlpha(info.endAlpha)
 
-                    if info.finishedFunc then
-                        info.finishedFunc(frame)
-                        info.finishedFunc = nil
+                    if info.fadeHoldTime and info.fadeHoldTime > 0 then
+                        info.fadeHoldTime = info.fadeHoldTime - elapsed
+                    else
+                        kui.frameFadeRemoveFrame(frame)
+
+                        if info.finishedFunc then
+                            info.finishedFunc(frame)
+                            info.finishedFunc = nil
+                        end
                     end
                 end
             end
         end
+
+        if #FADEFRAMES == 0 then
+            self:SetScript('OnUpdate', nil)
+        end
     end
 
-    if #kui.FADEFRAMES == 0 then
-        self:SetScript('OnUpdate', nil)
+    function kui.frameIsFading(frame)
+        for _,value in pairs(FADEFRAMES) do
+            if value == frame then
+                return true
+            end
+        end
     end
-end
---[[
-    info = {
-        mode            = "IN" (nil) or "OUT",
-        startAlpha      = alpha value to start at,
-        endAlpha        = alpha value to end at,
-        timeToFade      = duration of animation,
-        startDelay      = seconds to wait before starting animation,
-        fadeHoldTime    = seconds to wait after ending animation before calling finishedFunc,
-        finishedFunc    = function to call after animation has ended,
-    }
-
-    If you plan to reuse `info`, it should be passed as a single table,
-    NOT a reference, as the table will be directly edited.
-]]
-kui.frameFade = function(frame, info)
-    if not frame then return end
-    if kui.frameIsFading(frame) then
-        -- cancel the current operation
-        -- the code calling this should make sure not to interrupt a
-        -- necessary finishedFunc. This will entirely skip it.
-        kui.frameFadeRemoveFrame(frame)
+    function kui.frameFadeRemoveFrame(frame)
+        tDeleteItem(FADEFRAMES, frame)
     end
 
-    info        = info or {}
-    info.mode   = info.mode or 'IN'
+    --[[
+        info = {
+            mode            = "IN" (nil) or "OUT",
+            startAlpha      = alpha value to start at,
+            endAlpha        = alpha value to end at,
+            timeToFade      = duration of animation,
+            startDelay      = seconds to wait before starting animation,
+            fadeHoldTime    = seconds to wait after ending animation before calling finishedFunc,
+            finishedFunc    = function to call after animation has ended,
+        }
+        the `info` table is directly modified.
+    ]]
+    function kui.frameFade(frame,info)
+        if not frame then return end
+        if kui.frameIsFading(frame) then
+            -- cancel the current operation
+            -- the code calling this should make sure not to interrupt a
+            -- necessary finishedFunc. This will entirely skip it.
+            kui.frameFadeRemoveFrame(frame)
+        end
 
-    if info.mode == 'IN' then
-        info.startAlpha = info.startAlpha or 0
-        info.endAlpha   = info.endAlpha or 1
-    elseif info.mode == 'OUT' then
-        info.startAlpha = info.startAlpha or 1
-        info.endAlpha   = info.endAlpha or 0
+        info        = info or {}
+        info.mode   = info.mode or 'IN'
+
+        if info.mode == 'IN' then
+            info.startAlpha = info.startAlpha or 0
+            info.endAlpha   = info.endAlpha or 1
+        elseif info.mode == 'OUT' then
+            info.startAlpha = info.startAlpha or 1
+            info.endAlpha   = info.endAlpha or 0
+        end
+
+        frame:SetAlpha(info.startAlpha)
+        frame.fadeInfo = info
+
+        tinsert(FADEFRAMES, frame)
+        frameFadeFrame:SetScript('OnUpdate', OnUpdate)
     end
-
-    frame:SetAlpha(info.startAlpha)
-    frame.fadeInfo = info
-
-    tinsert(kui.FADEFRAMES, frame)
-    kui.frameFadeFrame:SetScript('OnUpdate', kui.frameFadeOnUpdate)
 end
