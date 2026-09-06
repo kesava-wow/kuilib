@@ -1,4 +1,4 @@
-local MAJOR, MINOR = 'Kui-1.0', 51
+local MAJOR, MINOR = 'Kui-1.1', 1
 local kui = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not kui then
@@ -19,28 +19,28 @@ kui.BURNING_CRUSADE = BURNING_CRUSADE
 kui.UNIT_HEALTH = 'UNIT_HEALTH'
 
 -- kui_media reference #########################################################
-local media = "Interface\\AddOns\\Kui_Media\\"
+local media = "Interface/AddOns/Kui_Media/"
 local textures = {
   borders = {
-    shadow  = media .. 't\\shadowBorder',
-    rounded = media .. 't\\solidRoundedBorder',
+    shadow  = media .. 't/shadowBorder',
+    rounded = media .. 't/solidRoundedBorder',
   },
   bars = {
-    bar       = media .. 't\\bar',
-    oldbar    = media .. 't\\bar-old',
-    sbar      = media .. 't\\bar-small',
-    brightbar = media .. 't\\bar-bright',
-    stripebar = media .. 't\\stippled-bar',
+    bar       = media .. 't/bar',
+    oldbar    = media .. 't/bar-old',
+    sbar      = media .. 't/bar-small',
+    brightbar = media .. 't/bar-bright',
+    stripebar = media .. 't/stippled-bar',
   },
   misc = {
-    solid      = media .. 't\\solid',
-    innerShade = media .. 't\\innerShade',
-    empty      = media .. 't\\empty',
+    solid      = media .. 't/solid',
+    innerShade = media .. 't/innerShade',
+    empty      = media .. 't/empty',
   },
 }
 local fonts = {
-  francois = media .. 'f\\francois.ttf',
-  roboto   = media .. 'f\\roboto.ttf',
+  francois = media .. 'f/francois.ttf',
+  roboto   = media .. 'f/roboto.ttf',
 }
 -- other locals ################################################################
 local TRILLION = 1000000000000
