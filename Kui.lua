@@ -337,36 +337,39 @@ kui.ModifyFontFlags = function(fs, io, flag)
 
   fs:SetFont(font, size, flags)
 end
-kui.CreateFontString = function(parent, args)
-  local ob, font, size, outline, alpha, shadow, mono
-  args = args or {}
+function kui.CreateFontString(parent, options)
+  options = kui.ParseOptions(options, {
+    layer = 'OVERLAY',
+    font = fonts.roboto,
+    size = 12,
+    outline = nil,
+    monochrome = nil,
+    alpha = 1,
+    shadow = false,
+    reset = false, -- if true, parent is an extant fontstring to be modified
+  })
 
-  if args.reset then
-    -- to change an already existing fontString
-    ob = parent
+  local obj
+  if options.reset then
+    obj = parent
   else
-    ob = parent:CreateFontString(nil, 'OVERLAY')
+    obj = parent:CreateFontString(nil, options.layer)
   end
 
-  font    = args.font or 'Fonts\\FRIZQT__.TTF'
-  size    = args.size or 12
-  outline = args.outline or nil
-  mono    = args.mono or args.monochrome or nil
-  alpha   = args.alpha or 1
-  shadow  = args.shadow or false
+  local flags
+  if options.outline then flags = 'OUTLINE' end
+  if options.monochrome then flags = flags .. ' MONOCHROME' end
 
-  ob:SetFont(font, size, (outline and 'OUTLINE' or '') .. (mono and ' MONOCHROME' or ''))
-  ob:SetAlpha(alpha)
+  obj:SetFont(options.font, options.size, flags)
+  obj:SetAlpha(options.alpha)
 
-  if shadow then
-    ob:SetShadowColor(0, 0, 0, 1)
-    ob:SetShadowOffset(type(shadow) == 'table' and unpack(shadow) or 1, -1)
-  elseif not shadow and args.reset then
+  if options.shadow then
+    obj:SetShadowColor(0, 0, 0, 1)
+    obj:SetShadowOffset(type(options.shadow) == 'table' and unpack(options.shadow) or 1, -1)
+  elseif options.reset then
     -- remove the shadow
-    ob:SetShadowColor(0, 0, 0, 0)
+    obj:SetShadowColor(0, 0, 0, 0)
   end
-
-  return ob
 end
 
 function kui.CreateStatusBarFast(parent, name, texture, layer, create_bg, bg_static, bg_alpha)
