@@ -236,6 +236,17 @@ kui.SetTextureToClass = function(texture, class, with_border, ymod)
   texture:SetTexture('interface/glues/charactercreate/ui-charactercreate-classes')
   texture:SetTexCoord(unpack(coords))
 end
+
+function kui.ParseOptions(options, defaults)
+  -- mixin defaults to options, ignoring extant keys
+  for k, v in pairs(defaults) do
+    if options[k] == nil then
+      options[k] = v
+    end
+  end
+  return options
+end
+
 -- media helpers ###############################################################
 function kui.GetFont(name)
   return name and fonts[name] or fonts.roboto
@@ -367,6 +378,93 @@ kui.CreateFontString = function(parent, args)
 
   return ob
 end
+
+function kui.CreateStatusBarFast(parent, name, texture, layer, create_bg, bg_static, bg_alpha)
+  local bar = CreateFrame('StatusBar', name, parent)
+  bar:SetStatusBarTexture(texture or textures.bars.bar, layer or 'BACKGROUND')
+
+  if create_bg then
+    -- coloured internal void infill (not frame border)
+    local bg = bar:CreateTexture(nil, layer or 'BACKGROUND')
+    bg.alpha = bg_alpha or .3
+    bg:SetTexture(texture or textures.bars.bar)
+    bg:SetAllPoints(bar)
+    bg:SetAlpha(bg.alpha)
+    bar.bg = bg
+
+    if not bg_static then
+      bar._SetStatusBarColor = bar.SetStatusBarColor
+      bar.SetStatusBarColor = function(self, r, g, b)
+        if self.bg then
+          if type(r) == 'table' then
+            self.bg:SetVertexColor(r[1], r[2], r[3], self.bg.alpha)
+            self:_SetStatusBarColor(r[1], r[2], r[3], 1)
+          else
+            self.bg:SetVertexColor(r, g, b, self.bg.alpha)
+            self:_SetStatusBarColor(r, g, b, 1)
+          end
+          self.bg:SetAlpha(self.bg.alpha)
+        end
+      end
+    end
+  end
+end
+
+function kui.CreateStatusBar(options)
+  options = kui.ParseOptions(options, {
+    -- no defaults: parent, name
+    create_bg = false,
+    texture = textures.bars.bar,
+    layer = 'BACKGROUND',
+    bg_static = false,
+    bg_alpha = .3
+  })
+  if not options.parent then
+    error('no parent specified in CreateStatusBar call')
+    return
+  end
+  return kui.CreateStatusBarFast(
+    options.parent, options.name, options.texture, options.layer, options.create_bg, options.bg_static, options.bg_alpha
+  )
+end
+
+do
+  local function HookFactory(fadeFunc, callback)
+    return function(self)
+      if not self.spark then return end
+
+      self.spark:SetAlpha(fadeFunc() or 1)
+
+      if callback then
+        callback(self, self.spark:GetAlpha())
+      end
+    end
+  end
+
+  function kui.CreateStatusBarSpark(bar, fadeFunc, callback)
+    local texture = bar:GetStatusBarTexture()
+    local spark = bar:CreateTexture(nil, 'OVERLAY')
+    spark:SetTexture(media .. 't/spark')
+    spark:SetWidth(12)
+
+    if bar:GetReverseFill() then
+      spark:SetPoint('TOP', texture, 'TOPLEFT', 1, 4)
+      spark:SetPoint('BOTTOM', texture, 'BOTTOMLEFT', 1, -4)
+    else
+      spark:SetPoint('TOP', texture, 'TOPRIGHT', -1, 4)
+      spark:SetPoint('BOTTOM', texture, 'BOTTOMRIGHT', -1, -4)
+    end
+
+    if fadeFunc then
+      local hook = HookFactory(fadeFunc, callback)
+      bar:HookScript('OnValueChanged', hook)
+      bar:HookScript('OnMinMaxChanged', hook)
+    end
+
+    bar.spark = spark
+  end
+end
+
 -- generic helpers #############################################################
 kui.num = function(num) -- TODO needs locale
   if not num then return end
