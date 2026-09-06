@@ -8,16 +8,6 @@ end
 
 local LSM_REGISTERED
 
--- TODO: update these
---luacheck:globals WOW_PROJECT_ID WOW_PROJECT_CLASSIC WOW_PROJECT_BURNING_CRUSADE_CLASSIC
-local CLASSIC = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
-local BURNING_CRUSADE = WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC
-kui.CLASSIC = CLASSIC or BURNING_CRUSADE
-kui.BURNING_CRUSADE = BURNING_CRUSADE
-
--- NOTE: legacy 8X -> 90 compatibility helper
-kui.UNIT_HEALTH = 'UNIT_HEALTH'
-
 -- kui_media reference #########################################################
 local media = "Interface/AddOns/Kui_Media/"
 local textures = {
