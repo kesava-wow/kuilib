@@ -6,39 +6,41 @@ if not kui then
   return
 end
 
+local LSM_REGISTERED
+
+-- TODO: update these
 --luacheck:globals WOW_PROJECT_ID WOW_PROJECT_CLASSIC WOW_PROJECT_BURNING_CRUSADE_CLASSIC
 local CLASSIC = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 local BURNING_CRUSADE = WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC
 kui.CLASSIC = CLASSIC or BURNING_CRUSADE
 kui.BURNING_CRUSADE = BURNING_CRUSADE
 
--- XXX 8X -> 90 compatibility helper
-local SHADOWLANDS = select(4, GetBuildInfo()) >= 90000
-kui.SHADOWLANDS = SHADOWLANDS
-kui.UNIT_HEALTH = SHADOWLANDS and 'UNIT_HEALTH' or 'UNIT_HEALTH_FREQUENT'
+-- NOTE: legacy 8X -> 90 compatibility helper
+kui.UNIT_HEALTH = 'UNIT_HEALTH'
 
--- media # XXX LEGACY #########################################################
+-- kui_media reference #########################################################
 local media = "Interface\\AddOns\\Kui_Media\\"
-kui.m = {
-  t = {
-    -- borders
-    shadow     = media .. 't\\shadowBorder',
-    rounded    = media .. 't\\solidRoundedBorder',
-    -- textures
+local textures = {
+  borders = {
+    shadow  = media .. 't\\shadowBorder',
+    rounded = media .. 't\\solidRoundedBorder',
+  },
+  bars = {
+    bar       = media .. 't\\bar',
+    oldbar    = media .. 't\\bar-old',
+    sbar      = media .. 't\\bar-small',
+    brightbar = media .. 't\\bar-bright',
+    stripebar = media .. 't\\stippled-bar',
+  },
+  misc = {
     solid      = media .. 't\\solid',
     innerShade = media .. 't\\innerShade',
     empty      = media .. 't\\empty',
-    -- progress bars
-    bar        = media .. 't\\bar',
-    oldbar     = media .. 't\\bar-old',
-    sbar       = media .. 't\\bar-small',
-    brightbar  = media .. 't\\bar-bright',
-    stripebar  = media .. 't\\stippled-bar',
   },
-  f = {
-    francois = media .. 'f\\francois.ttf',
-    roboto   = media .. 'f\\roboto.ttf',
-  },
+}
+local fonts = {
+  francois = media .. 'f\\francois.ttf',
+  roboto   = media .. 'f\\roboto.ttf',
 }
 -- other locals ################################################################
 local TRILLION = 1000000000000
@@ -234,6 +236,37 @@ kui.SetTextureToClass = function(texture, class, with_border, ymod)
   texture:SetTexture('interface/glues/charactercreate/ui-charactercreate-classes')
   texture:SetTexCoord(unpack(coords))
 end
+-- media helpers ###############################################################
+function kui.GetFont(name)
+  return name and fonts[name] or fonts.roboto
+end
+
+function kui.GetBorderTexture(name)
+  return name and textures.borders[name] or textures.borders.shadow
+end
+
+function kui.GetBarTexture(name)
+  return name and textures.bars[name] or textures.bars.bar
+end
+
+function kui.GetTexture(name)
+  return name and textures.misc[name]
+end
+
+function kui.RegisterMediaWithLSM(LSM)
+  if not LSM then error('must provide LSM object') end
+  if LSM_REGISTERED then return end
+  LSM_REGISTERED = true
+
+  LSM:Register(LSM.MediaType.FONT, 'FrancoisOne', fonts.francois)
+  LSM:Register(LSM.MediaType.FONT, 'Roboto Condensed Bold', fonts.roboto,
+    LSM.LOCALE_BIT_western + LSM.LOCALE_BIT_ruRU)
+
+  LSM:Register(LSM.MediaType.STATUSBAR, 'Kui status bar', textures.bars.bar)
+  LSM:Register(LSM.MediaType.STATUSBAR, 'Kui status bar (brighter)', textures.bars.bightbar)
+  LSM:Register(LSM.MediaType.STATUSBAR, 'Kui shaded bar', textures.bars.oldbar)
+end
+
 -- unit helpers ################################################################
 kui.UnitIsPet = function(unit)
   return (not UnitIsPlayer(unit) and UnitPlayerControlled(unit))
@@ -780,7 +813,6 @@ do
     self:SetScript('OnUpdate', nil)
   end
   local FrameLockMixin = {}
-  -- true if this is the first time FrameLock has been called this frame
   function FrameLockMixin:FrameLock()
     if self.framelocked then
       return
