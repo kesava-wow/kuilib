@@ -7,6 +7,7 @@ if not kui then
 end
 
 local LSM_REGISTERED
+local SECRET_CLASS_COLOUR = { r = 1, g = 1, b = 1 }
 
 -- kui_media reference #########################################################
 local media = "Interface/AddOns/Kui_Media/"
@@ -197,7 +198,9 @@ kui.GetClassColour = function(class, str)
     class = select(2, UnitClass(class))
   end
 
-  if CUSTOM_CLASS_COLORS then
+  if issecretvalue(class) then
+    class = SECRET_CLASS_COLOUR
+  elseif CUSTOM_CLASS_COLORS then
     class = CUSTOM_CLASS_COLORS[class]
   else
     class = RAID_CLASS_COLORS[class]
@@ -370,6 +373,8 @@ function kui.CreateFontString(parent, options)
     -- remove the shadow
     obj:SetShadowColor(0, 0, 0, 0)
   end
+
+  return obj
 end
 
 function kui.CreateStatusBarFast(parent, name, texture, layer, create_bg, bg_static, bg_alpha)
@@ -401,6 +406,8 @@ function kui.CreateStatusBarFast(parent, name, texture, layer, create_bg, bg_sta
       end
     end
   end
+
+  return bar
 end
 
 function kui.CreateStatusBar(options)
